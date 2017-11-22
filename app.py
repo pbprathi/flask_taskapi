@@ -5,28 +5,32 @@ from flask_mail import Mail,Message
 import jwt
 import datetime
 from functools import wraps
+import configparser
 
+
+Config = configparser.ConfigParser()
+Config.read("task.ini")
 
 app=Flask(__name__)
-app.config['SECRECT_KEY']="babu"
+app.config['SECRECT_KEY']=Config.get('keys','secrect_key')
 
 file_handler=FileHandler('errorlog.txt')
 file_handler.setLevel(WARNING)
 
 app.logger.addHandler(file_handler)
 
-client=MongoClient('mongodb://127.0.0.1:27017/')
+client=MongoClient(Config.get('mongo','host'))
 
 db=client.tasks
 
 app.config.update(
     debug=True,
     # EMAIL SETTINGS
-    MAIL_SERVER='smtp.gmail.com',
-	MAIL_PORT=465,
-	MAIL_USE_SSL=True,
-	MAIL_USERNAME = 'XXXXXX',
-	MAIL_PASSWORD = 'XXXXXX'
+    MAIL_SERVER=Config.get('mail','mail_server'),
+	MAIL_PORT=Config.get('mail','mail_port'),
+	MAIL_USE_SSL=Config.get('mail','mail_use_ssl'),
+	MAIL_USERNAME = Config.get('mail','mail_username'),
+	MAIL_PASSWORD = Config.get('mail','mail_password')
 )
 
 mail=Mail(app)
